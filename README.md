@@ -11,10 +11,10 @@
 
 [Step 3] config in server to some direcory managment
 
-    mv vps_manager-1/servermanager  /etc/nginx/sites-enabled/servermanager
+    mv vps_manager-3/servermanager  /etc/nginx/sites-enabled/servermanager
     mkdir servermanager 
-    mv vps_manager-1/__init__.py servermanager/__init__.py
-    rm -rf vps_manager-1
+    mv vps_manager-3/__init__.py servermanager/__init__.py
+    rm -rf vps_manager-3
 
 [Step 4] config nbinx
 
