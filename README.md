@@ -16,7 +16,7 @@
 
 [Step 5] install python settings
 
-    pip3 install flask  jdatetime
+    pip3 install flask  jdatetime jsonpickle
 
 [Step 6]run flask server
 
