@@ -88,15 +88,17 @@ def create_user():
       
       email = randomStringDigits(10) + "@x-ui-english.dev"
       c.execute("INSERT INTO client_traffics VALUES (?,?,?,?,?,?,?,?) ", (None, inbound_id, 1, email, 0, 0, expire_date, total_traffics))
-      data.append({"email": email, "expiryTime": expire_date, 'flow':'none', 'id':id,'limitIp':limit_ip_count,  "totalGB": total_traffics})
+     
+      
       if withtls:
-        
+        data.append({'id':id,'flow':'xtls-rprx-direct', "email": email, 'limitIp':limit_ip_count, "totalGB": total_traffics, "expiryTime": expire_date })
         result.append("vless://" +
                     id + "@" + baseurl + ':'
                     + str(port) + '?type='+network+'&security=' + security  + '&path=%2F' + '&host=' + servername +  '&sni=' +  servername + 
                     '#'
                     + title)
       else:
+        data.append({'id':id,'alterId':0, "email": email, 'limitIp':limit_ip_count, "totalGB": total_traffics, "expiryTime": expire_date })
         result.append("vless://" +  id + "@" + baseurl + ':'  + str(port) + '?type='+network+  '#' + title)
         
     settings = json.dumps({"clients": data, "decryption": "none", "fallbacks": []})
