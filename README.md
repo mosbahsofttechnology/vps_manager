@@ -20,4 +20,4 @@
 
 [Step 6]run flask server
 
-    nohup gunicorn -w 3 servermanager:app &
+    nohup gunicorn -w 3 servermanager:app --bind 0.0.0.0:5000 &
