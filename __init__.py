@@ -62,8 +62,16 @@ def create_user():
     # advanced settings
     base_setting= (json.loads(main_data[0][2]))
     network  = base_setting['network']
-    security = base_setting['security']
-    servername = base_setting['tlsSettings']['serverName']
+    
+    
+    withtls=False
+    try:
+      servername = base_setting['tlsSettings']['serverName']
+      security = base_setting['security']
+      withtls = True
+    except:
+      withtls = False
+      
     
     
     # client_traffics table
@@ -80,11 +88,16 @@ def create_user():
       email = randomStringDigits(10) + "@x-ui-english.dev"
       c.execute("INSERT INTO client_traffics VALUES (?,?,?,?,?,?,?,?) ", (None, inbound_id, 1, email, 0, 0, expire_date, total_traffics))
       data.append({"email": email, "expiryTime": expire_date, 'flow':'none', 'id':id,'limitIp':limit_ip_count,  "totalGB": total_traffics})
-      result.append("vless://" +
+      if withtls:
+        
+        result.append("vless://" +
                     id + "@" + baseurl + ':'
                     + str(port) + '?type='+network+'&security=' + security  + '&path=%2F' + '&host=' + servername +  '&sni=' +  servername + 
                     '#'
                     + title)
+      else:
+        result.append("vless://" +  id + "@" + baseurl + ':'  + str(port) + '?type='+network+  '#' + title)
+        
     settings = json.dumps({"clients": data, "decryption": "none", "fallbacks": []})
     c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (settings, inbound_id))
 
