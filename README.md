@@ -1,8 +1,6 @@
 [Step 1] first install apps [Step 1]
 
-    apt-get install python3
-    apt-get install python3-pip 
-    apt-get install unzip  nginx  gunicorn -y
+    apt-get install python3 python3-pip unzip  nginx  gunicorn -y
 
 [Step 2] download scripts
 
