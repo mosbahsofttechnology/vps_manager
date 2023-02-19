@@ -6,6 +6,7 @@ import random
 from flask import request
 import uuid
 import jdatetime
+import jsonpickle
 app = Flask(__name__)
 
 dburl = "/etc/x-ui-english/x-ui-english.db"
@@ -104,7 +105,7 @@ def create_user():
     
     conn.commit()
     conn.close()
-    return result
+    return jsonpickle.encode(result)
   
 @app.route('/remove', methods=['GET', 'POST'])
 def remove_user():
