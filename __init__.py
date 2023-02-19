@@ -84,7 +84,7 @@ def create_user():
 
     result = []
     for i in range(item_count):
-      id = str(uuid.uuid4())
+      id = str(uuid.uuid1())
       
       email = randomStringDigits(10) + "@x-ui-english.dev"
       c.execute("INSERT INTO client_traffics VALUES (?,?,?,?,?,?,?,?) ", (None, inbound_id, 1, email, 0, 0, expire_date, total_traffics))
