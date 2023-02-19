@@ -6,8 +6,8 @@
 
 [Step 2] download scripts
 
-    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v1.zip
-    unzip v1.zip -d .
+    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v3.zip
+    unzip v3.zip -d .
 
 [Step 3] config in server to some direcory managment
 
