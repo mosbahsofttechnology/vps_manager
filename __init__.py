@@ -43,7 +43,7 @@ def create_user():
     
     
     # convert expire_date_day to timestamp + 000
-    expire_date = expire_date_day * 86400 + int(jdatetime.datetime.now().timestamp()) * 1000
+    expire_date = ((expire_date_day * 86400) + int(jdatetime.datetime.now().timestamp()) ) * 1000
     
     # convert total_traffics to bytes
     total_traffics = total_traffics * 1024 * 1024 * 1024
