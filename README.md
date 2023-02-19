@@ -6,15 +6,15 @@
 
 [Step 2] download scripts
 
-    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v3.zip
-    unzip v3.zip -d .
+    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v4.zip
+    unzip v4.zip -d .
 
 [Step 3] config in server to some direcory managment
 
-    mv vps_manager-3/servermanager  /etc/nginx/sites-enabled/servermanager
+    mv vps_manager-4/servermanager  /etc/nginx/sites-enabled/servermanager
     mkdir servermanager 
-    mv vps_manager-3/__init__.py servermanager/__init__.py
-    rm -rf vps_manager-3
+    mv vps_manager-4/__init__.py servermanager/__init__.py
+    rm -rf vps_manager-4
 
 [Step 4] config nbinx
 
