@@ -8,10 +8,13 @@ import uuid
 import jdatetime
 import jsonpickle
 import os
+import time
+
 
 app = Flask(__name__)
 
 dburl = "/etc/x-ui-english/x-ui-english.db"
+# dburl = "x-ui-english.db"
 
 #generate random email
 def randomStringDigits(stringLength=10):
@@ -30,7 +33,6 @@ def stamp_to_persian_date(stamp):
   
 @app.route('/create', methods=['GET', 'POST'])
 def create_user():
-  
     item_count = request.args.get('item_count', default = 1, type = int)
     expire_date_day = request.args.get('expire', default = 30, type = int)
     total_traffics = request.args.get('trafiic', default = 30, type = int)
@@ -76,6 +78,8 @@ def create_user():
       withtls = False
       
     
+      
+    
     
     # client_traffics table
     settings = main_data[0][0]
@@ -93,26 +97,40 @@ def create_user():
      
       
       if withtls:
-        data.append({'id':id,'flow':'xtls-rprx-direct', "email": email, 'limitIp':limit_ip_count, "totalGB": total_traffics, "expiryTime": expire_date })
+        newData = data[0].copy()
+        newData['id'] = id
+        newData['id'] = id
+        newData['email'] = email
+        newData['limitIp'] = limit_ip_count
+        newData['totalGB'] = total_traffics
+        newData['expiryTime'] = expire_date
+        data.append(newData)
+        settings = json.dumps({"clients": data, "decryption": "none", "fallbacks": []})
         result.append("vless://" +
                     id + "@" + baseurl + ':'
                     + str(port) + '?type='+network+'&security=' + security  + '&path=%2F' + '&host=' + servername +  '&sni=' +  servername + 
                     '#'
                     + title)
       else:
-        data.append({'id':id,'alterId':0, "email": email, 'limitIp':limit_ip_count, "totalGB": total_traffics, "expiryTime": expire_date })
+        newData = data[0].copy()
+        newData['id'] = id
+        newData['email'] = email
+        newData['limitIp'] = limit_ip_count
+        newData['totalGB'] = total_traffics
+        newData['expiryTime'] = expire_date
+        data.append(newData)
+        settings = json.dumps({"clients": data, "disableInsecureEncryption": False})
         result.append("vless://" +  id + "@" + baseurl + ':'  + str(port) + '?type='+network+  '#' + title)
         
-    settings = json.dumps({"clients": data, "decryption": "none", "fallbacks": []})
+        
     c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (settings, inbound_id))
 
-    
     conn.commit()
     conn.close()
     
     
     # restart x-ui
-
+    time.sleep(2.0)
     os.system("systemctl restart x-ui")
 
     return jsonpickle.encode(result)
@@ -157,7 +175,8 @@ def remove_user():
     
 
     conn.commit()
-    conn.close()
+    conn.close()    
+    time.sleep(2.0)
     os.system("systemctl restart x-ui")
     return 'a user that email is ' + email + ' has been removed'
   
@@ -169,8 +188,9 @@ def user_item_count():
     c.execute("SELECT COUNT(*) FROM client_traffics")
     main_data = c.fetchall()
     conn.close()
-    return str(main_data[0][0])
     os.system("systemctl restart x-ui")
+    return str(main_data[0][0])
+    
 @app.route('/user_list', methods=['GET', 'POST'])
 def user_list():
     conn = sqlite3.connect(dburl)
@@ -184,6 +204,7 @@ def user_list():
       result.append({"email": main_data[i][3],"expire_date": stamp_to_persian_date(main_data[i][6]),"total_trafic": convert_bytes(main_data[i][7])})
     
     conn.close()
+    time.sleep(2.0)
     os.system("systemctl restart x-ui")
     return str(result)
   
@@ -231,6 +252,7 @@ def change_expire_date():
     
     conn.commit()
     conn.close()
+    time.sleep(2.0)
     os.system("systemctl restart x-ui")
     return 'expire date has been changed'
   
@@ -275,6 +297,7 @@ def change_total_traffics():
     
     conn.commit()
     conn.close()
+    time.sleep(2.0)
     os.system("systemctl restart x-ui")
     return 'total traffics has been changed'
   
@@ -311,6 +334,7 @@ def chnage_ip_limit():
  
     conn.commit()
     conn.close()
+    time.sleep(2.0)
     os.system("systemctl restart x-ui")
     return 'ip limit has been changed'
 if __name__ == '__main__':
