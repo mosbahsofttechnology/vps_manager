@@ -7,6 +7,8 @@ from flask import request
 import uuid
 import jdatetime
 import jsonpickle
+import os
+
 app = Flask(__name__)
 
 dburl = "/etc/x-ui-english/x-ui-english.db"
@@ -107,6 +109,12 @@ def create_user():
     
     conn.commit()
     conn.close()
+    
+    
+    # restart x-ui
+
+    os.system("systemctl restart x-ui")
+
     return jsonpickle.encode(result)
   
 @app.route('/remove', methods=['GET', 'POST'])
@@ -150,6 +158,7 @@ def remove_user():
 
     conn.commit()
     conn.close()
+    os.system("systemctl restart x-ui")
     return 'a user that email is ' + email + ' has been removed'
   
   
@@ -161,7 +170,7 @@ def user_item_count():
     main_data = c.fetchall()
     conn.close()
     return str(main_data[0][0])
-  
+    os.system("systemctl restart x-ui")
 @app.route('/user_list', methods=['GET', 'POST'])
 def user_list():
     conn = sqlite3.connect(dburl)
@@ -175,6 +184,7 @@ def user_list():
       result.append({"email": main_data[i][3],"expire_date": stamp_to_persian_date(main_data[i][6]),"total_trafic": convert_bytes(main_data[i][7])})
     
     conn.close()
+    os.system("systemctl restart x-ui")
     return str(result)
   
   
@@ -221,6 +231,7 @@ def change_expire_date():
     
     conn.commit()
     conn.close()
+    os.system("systemctl restart x-ui")
     return 'expire date has been changed'
   
 @app.route('/change_total_traffics', methods=['GET', 'POST'])
@@ -264,6 +275,7 @@ def change_total_traffics():
     
     conn.commit()
     conn.close()
+    os.system("systemctl restart x-ui")
     return 'total traffics has been changed'
   
 @app.route('/chnage_ip_limit', methods=['GET', 'POST'])
@@ -299,6 +311,7 @@ def chnage_ip_limit():
  
     conn.commit()
     conn.close()
+    os.system("systemctl restart x-ui")
     return 'ip limit has been changed'
 if __name__ == '__main__':
   app.run(host='0.0.0.0')
