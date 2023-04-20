@@ -337,6 +337,23 @@ def chnage_ip_limit():
     time.sleep(2.0)
     os.system("systemctl restart x-ui")
     return 'ip limit has been changed'
+  
+@app.route('/restart/x-ui', methods=['GET', 'POST'])
+def restart_xui():
+    os.system("systemctl restart x-ui")
+    return "Restarted X-UI"
+    
+    
+@app.route('/restart/socat', methods=['GET', 'POST'])
+def restart_socat():
+    # systemctl daemon-reload
+    # systemctl enable tunnel.service
+    # systemctl start tunnel.service
+    # systemctl status tunnel
+    os.system("systemctl daemon-reload")
+    os.system("systemctl enable tunnel.service")
+    os.system("systemctl start tunnel.service")
+    return 'Restarted Socat'
 if __name__ == '__main__':
   app.run(host='0.0.0.0')
   
