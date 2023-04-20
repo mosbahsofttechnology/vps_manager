@@ -9,11 +9,13 @@
 [Step 3] install python settings
 
     pip3 install flask  jdatetime jsonpickle
+# 
 
+[Step 3.5] Optional [remove if exited work before new job]
+#### if excited you can see folder of servermanager
 
-Optional [remove if exited work before new job]
-if excited you can see folder of servermanager
-     pkill gunicorn && rm -rf servermanager v11.zip nohup.out 
+    pkill gunicorn && rm -rf servermanager v11.zip nohup.out 
+#  
 [Step 4] run flask server
 
     nohup gunicorn -w 3 servermanager:app --bind 0.0.0.0:4000 &
