@@ -18,7 +18,6 @@
 
 
 # Usage Gauid
-# vpn_manager_with_flask
  
 ## create user by set count.
  /create 
