@@ -9,7 +9,7 @@ import jdatetime
 import jsonpickle
 import os
 import time
-
+import psutil
 
 app = Flask(__name__)
 
@@ -29,7 +29,23 @@ def convert_bytes(num):
     
 def stamp_to_persian_date(stamp):
   return jdatetime.date.fromtimestamp(stamp)
+def format_size(size_bytes):
+    """Convert a size in bytes to a human-readable format."""
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        if abs(size_bytes) < 1024.0:
+            return f"{size_bytes:.2f} {unit}B"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.2f} YiB"
 
+def get_network_traffic():
+    network_counters_before = psutil.net_io_counters()
+    time.sleep(1)
+    network_counters_after = psutil.net_io_counters()
+
+    sent_bytes = network_counters_after.bytes_sent - network_counters_before.bytes_sent
+    recv_bytes = network_counters_after.bytes_recv - network_counters_before.bytes_recv
+
+    return sent_bytes, recv_bytes
   
 @app.route('/create', methods=['GET', 'POST'])
 def create_user():
@@ -330,8 +346,6 @@ def chnage_ip_limit():
     settings = json.dumps({"clients": data, "decryption": "none", "fallbacks": []})
     c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (settings, inbound_id))
 
-
- 
     conn.commit()
     conn.close()
     time.sleep(2.0)
@@ -343,17 +357,21 @@ def restart_xui():
     os.system("systemctl restart x-ui")
     return "Restarted X-UI"
     
-    
+
 @app.route('/restart/socat', methods=['GET', 'POST'])
 def restart_socat():
-    # systemctl daemon-reload
-    # systemctl enable tunnel.service
-    # systemctl start tunnel.service
-    # systemctl status tunnel
-    os.system("systemctl daemon-reload")
-    os.system("systemctl enable tunnel.service")
-    os.system("systemctl start tunnel.service")
+    os.system("systemctl restart tunnel.service")
     return 'Restarted Socat'
+  
+@app.route('/analyze/now', methods=['GET', 'POST'])
+def nowAnalyze():
+  sent, received = get_network_traffic()
+  sent_humanized = (sent)
+  received_humanized = (received)
+  return (json.dumps({"sent": sent_humanized, "received": received_humanized}))
+
+
 if __name__ == '__main__':
   app.run(host='0.0.0.0')
   
+
