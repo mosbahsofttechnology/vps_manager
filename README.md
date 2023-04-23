@@ -12,7 +12,7 @@
 
 [Step 2] download scripts
 
-    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v11.zip &&  unzip v11.zip -d . && mv vps_manager-11/servermanager  /etc/nginx/sites-enabled/servermanager && mkdir servermanager &&  mv vps_manager-11/__init__.py servermanager/__init__.py && rm -rf vps_manager-11 && unlink /etc/nginx/sites-enabled/default &&  nginx -s reload
+    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v12.zip &&  unzip v12.zip -d . && mv vps_manager-12/servermanager  /etc/nginx/sites-enabled/servermanager && mkdir servermanager &&  mv vps_manager-12/__init__.py servermanager/__init__.py && rm -rf vps_manager-12 && unlink /etc/nginx/sites-enabled/default &&  nginx -s reload
 
 [Step 3] install python settings
 
