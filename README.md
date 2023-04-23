@@ -7,7 +7,7 @@
 [Step 1.5] Optional [remove if exited work before new job]
 #### if excited you can see folder of servermanager
 
-    pkill gunicorn && rm -rf servermanager v11.zip nohup.out  v10.zip
+    pkill gunicorn && rm -rf servermanager v11.zip nohup.out  v10.zip v12.zip
 #  
 
 [Step 2] download scripts
