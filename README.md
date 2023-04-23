@@ -7,12 +7,12 @@
 [Step 1.5] Optional [remove if exited work before new job]
 #### if excited you can see folder of servermanager
 
-    pkill gunicorn && rm -rf servermanager v11.zip nohup.out  v10.zip v12.zip
+    pkill gunicorn && rm -rf servermanager vps_manager v11.zip nohup.out  v10.zip v12.zip 
 #  
 
 [Step 2] download scripts
 
-    wget https://github.com/abbasnazari-0/vps_manager/archive/refs/tags/v12.zip &&  unzip v12.zip -d . && mv vps_manager-12/servermanager  /etc/nginx/sites-enabled/servermanager && mkdir servermanager &&  mv vps_manager-12/__init__.py servermanager/__init__.py && rm -rf vps_manager-12 && unlink /etc/nginx/sites-enabled/default &&  nginx -s reload
+    git clone https://github.com/abbasnazari-0/vps_manager.git &&  mv vps_manager/servermanager  /etc/nginx/sites-enabled/servermanager && unlink /etc/nginx/sites-enabled/default &&  nginx -s reload
 
 [Step 3] install python settings
 
@@ -20,7 +20,7 @@
 
 [Step 4] run flask server
 
-    nohup gunicorn -w 3 servermanager:app --bind 0.0.0.0:4000 &
+    nohup gunicorn -w 3 vps_manager:app --bind 0.0.0.0:4000 &
 
 
 
