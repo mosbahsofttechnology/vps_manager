@@ -372,7 +372,7 @@ def nowAnalyze():
 
 @app.route('/restart/force', methods=['GET', 'POST'])
 def restart_force():
-    os.system("sudo reboot")
+    os.system("reboot")
     return 'system rebooting'
   
 if __name__ == '__main__':
