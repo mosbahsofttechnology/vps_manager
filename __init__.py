@@ -370,7 +370,11 @@ def nowAnalyze():
   received_humanized = (received)
   return (json.dumps({"sent": sent_humanized, "received": received_humanized}))
 
-
+@app.route('/restart/force', methods=['GET', 'POST'])
+def restart_socat():
+    os.system("sudo reboot")
+    return 'system rebooting'
+  
 if __name__ == '__main__':
   app.run(host='0.0.0.0')
   
