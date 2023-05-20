@@ -371,7 +371,7 @@ def nowAnalyze():
   return (json.dumps({"sent": sent_humanized, "received": received_humanized}))
 
 @app.route('/restart/force', methods=['GET', 'POST'])
-def restart_socat():
+def restart_force():
     os.system("sudo reboot")
     return 'system rebooting'
   
