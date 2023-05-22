@@ -22,7 +22,7 @@ Restart=always
 RuntimeMaxSec=6h
 RestartSec=1
 User=root
-ExecStart=gunicorn -w 3 vps_manager:app --bind 0.0.0.0:4000
+ExecStart=gunicorn -w 3 vps_manager:app --bind 0.0.0.0:4000 --chdir /root/vps_manager
 
 [Install]
 WantedBy=multi-user.target
