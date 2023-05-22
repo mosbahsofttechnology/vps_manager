@@ -12,9 +12,7 @@ pip3 install flask jdatetime jsonpickle psutil
 
 rm /etc/systemd/system/manager_vps.service
 
-echo "
-
-[Unit]
+echo "[Unit]
 Description=VPS MANAGER SERVICE
 After=network.target
 StartLimitIntervalSec=0
