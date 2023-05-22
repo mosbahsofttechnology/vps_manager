@@ -12,7 +12,7 @@ pip3 install flask jdatetime jsonpickle psutil
 
 echo "
 [Unit]
-Description=My App Service
+Description=VPS MANAGER SERVICE
 
 [Service]
 ExecStart=gunicorn -w 3 vps_manager:app --bind 0.0.0.0:4000
@@ -23,6 +23,6 @@ Restart=always
 WantedBy=multi-user.target" >> /etc/systemd/system/manager_vps.service
 
 sudo systemctl daemon-reload
-sudo systemctl start myapp.service
-sudo systemctl enable myapp.service
+sudo systemctl start manager_vps.service
+sudo systemctl enable manager_vps.service
 
