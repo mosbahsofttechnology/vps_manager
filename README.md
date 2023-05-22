@@ -1,7 +1,7 @@
 Automatitacly Install : 
 
 
-    bash <(curl -Ls https://raw.githubusercontent.com/abbasnazari-0/vps_manager/main/setup.sh)
+    bash <(curl -Ls https://raw.githubusercontent.com/abbasnazari-0/vps_manager/main/install.sh)
 
 
 
