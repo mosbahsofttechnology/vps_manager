@@ -10,6 +10,8 @@ unlink /etc/nginx/sites-enabled/default && nginx -s reload
 
 pip3 install flask jdatetime jsonpickle psutil 
 
+rm /etc/systemd/system/manager_vps.service
+
 echo "
 
 [Unit]
