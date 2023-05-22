@@ -11,16 +11,23 @@ unlink /etc/nginx/sites-enabled/default && nginx -s reload
 pip3 install flask jdatetime jsonpickle psutil 
 
 echo "
+
 [Unit]
 Description=VPS MANAGER SERVICE
-
+After=network.target
+StartLimitIntervalSec=0
 [Service]
-ExecStart=gunicorn -w 3 vps_manager:app --bind 0.0.0.0:4000
-WorkingDirectory=/root/vps_manager/
+Type=simple
 Restart=always
+RuntimeMaxSec=6h
+RestartSec=1
+User=root
+ExecStart=gunicorn -w 3 vps_manager:app --bind 0.0.0.0:4000
 
 [Install]
-WantedBy=multi-user.target" >> /etc/systemd/system/manager_vps.service
+WantedBy=multi-user.target
+
+" >> /etc/systemd/system/manager_vps.service
 
 sudo systemctl daemon-reload
 sudo systemctl enable manager_vps.service
