@@ -14,7 +14,6 @@ echo "
 
 [Unit]
 Description=VPS MANAGER SERVICE
-After=network.target
 StartLimitIntervalSec=0
 [Service]
 Type=simple
