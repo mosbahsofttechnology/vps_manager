@@ -23,6 +23,11 @@ Restart=always
 WantedBy=multi-user.target" >> /etc/systemd/system/manager_vps.service
 
 sudo systemctl daemon-reload
-sudo systemctl start manager_vps.service
 sudo systemctl enable manager_vps.service
+sudo systemctl start manager_vps.service
 
+echo ""
+echo ""
+echo ""
+echo "success Install MANAGER"
+echo ""
