@@ -32,7 +32,7 @@ WantedBy=multi-user.target
 
 sudo systemctl daemon-reload
 sudo systemctl enable manager_vps.service
-sudo systemctl start manager_vps.service
+sudo systemctl restart manager_vps.service
 
 echo ""
 echo ""
