@@ -4,7 +4,8 @@ pkill gunicorn
 
 rm -rf servermanager/ vps_manager/ v11.zip nohup.out v10.zip v12.zip 
 
-git clone https://github.com/abbasnazari-0/vps_manager.git 
+rm -rf vps_manager && git clone  https://github.com/abbasnazari-0/vps_manager.git
+
 mv vps_manager/servermanager /etc/nginx/sites-enabled/servermanager 
 unlink /etc/nginx/sites-enabled/default && nginx -s reload 
 
