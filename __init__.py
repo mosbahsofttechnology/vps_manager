@@ -117,7 +117,6 @@ def create_user():
     # restart x-ui
     time.sleep(1.0)
     restart_xui_in_thread()
-    return "added"
     return {"status": "success", "message": "user creating", "data": ""}
   
 @app.route('/user_usage', methods=['GET', 'POST'])
