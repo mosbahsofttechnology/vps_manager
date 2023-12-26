@@ -13,7 +13,7 @@ import psutil
 
 app = Flask(__name__)
 
-dburl = "/etc/x-ui-english/x-ui-english.db"
+dburl = "/etc/x-ui/x-ui.db"
 # dburl = "x-ui-english.db"
 
 #generate random email
@@ -56,6 +56,9 @@ def create_user():
     limit_ip_count = request.args.get('limit_ip_count', default = 1, type = int)
     title = request.args.get('title', default = "Speedoooooooooooooo", type = str)
     baseurl = request.args.get('baseurl', default = "mtn2amn.amnbridge.top", type = str)
+    inbound_port_target = request.args.get('inbound_port_target', default = 0, type = int)
+    if(inbound_port_target == 0):
+        return "Please select a port"
    
     
     # connect to db
