@@ -140,7 +140,7 @@ def user_usage():
   up = main_data[0][4]
   down = main_data[0][5]
   used = up + down
-  return {"status": "success", "message": "user usage", "used": used}
+  return {"status": "success", "message": "user usages", "used": used}
   
 @app.route('/disable_user', methods=['GET', 'POST'])
 def disable_user():
