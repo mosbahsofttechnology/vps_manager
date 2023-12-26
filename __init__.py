@@ -118,6 +118,7 @@ def create_user():
     time.sleep(1.0)
     restart_xui_in_thread()
     return "added"
+    return {"status": "success", "message": "user creating", "data": ""}
   
 @app.route('/user_usage', methods=['GET', 'POST'])
 def user_usage():
@@ -140,9 +141,7 @@ def user_usage():
   up = main_data[0][4]
   down = main_data[0][5]
   used = up + down
-  
-  return str({"used": used})
-  
+  return {"status": "success", "message": "user usage", "used": used}
   
 @app.route('/disable_user', methods=['GET', 'POST'])
 def disable_user():
