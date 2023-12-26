@@ -47,113 +47,181 @@ def get_network_traffic():
 
     return sent_bytes, recv_bytes
   
+def randomStringDigits(stringLength=10):
+  lettersAndDigits = string.ascii_letters + string.digits
+  return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
+
+import threading
+
+def restart_xui_in_thread():
+  def restart_service():
+    os.system("systemctl restart x-ui")
+  thread = threading.Thread(target=restart_service)
+  thread.start()
 @app.route('/create', methods=['GET', 'POST'])
 def create_user():
     item_count = request.args.get('item_count', default = 1, type = int)
     expire_date_day = request.args.get('expire', default = 30, type = int)
-    total_traffics = request.args.get('trafiic', default = 30, type = int)
-    inbound_id = request.args.get('inbound_id', default = 1, type = int)
     limit_ip_count = request.args.get('limit_ip_count', default = 1, type = int)
-    title = request.args.get('title', default = "Speedoooooooooooooo", type = str)
     baseurl = request.args.get('baseurl', default = "mtn2amn.amnbridge.top", type = str)
+    title = request.args.get('title', default = "Speedoooooooooooooo", type = str)
     inbound_port_target = request.args.get('inbound_port_target', default = 0, type = int)
+    total_traffics = request.args.get('trafiic', default = 0, type = int)
+    id = request.args.get('id', default = 1, type = str)
     if(inbound_port_target == 0):
-        return "Please select a port"
-   
-    
+        return "Please select a port 2" 
+    if(total_traffics != 0):
+      total_traffics = total_traffics * 1024 * 1024 * 1024
+
     # connect to db
     conn = sqlite3.connect(dburl)
-    
-    
-    
+
     # convert expire_date_day to timestamp + 000
     expire_date = ((expire_date_day * 86400) + int(jdatetime.datetime.now().timestamp()) ) * 1000
     
     # convert total_traffics to bytes
-    total_traffics = total_traffics * 1024 * 1024 * 1024
-    
-        
+
     c = conn.cursor()
     
     # inbound table
-    c.execute("SELECT settings,id,stream_settings,port, protocol FROM inbounds WHERE id = ?", (inbound_id,))
-    main_data = settings = c.fetchall()
-    
-    # get all settings
-    port = main_data[0][3]
-    protocol = main_data[0][4]
-    
-    # advanced settings
-    base_setting= (json.loads(main_data[0][2]))
-    network  = base_setting['network']
-    
-    
-    withtls=False
+    c.execute("SELECT settings,id  FROM inbounds WHERE port = ? LIMIT 1", (inbound_port_target,))
+    # fetch one
+    main_data  =  c.fetchall()
+    clients = json.loads(main_data[0][0])
+    inbound_id =  main_data[0][1]
+
+    first_client = (clients['clients'][0])
+    new_client = first_client.copy()
+    new_client['id'] = id
+    new_client['totalGB'] = total_traffics
+    new_client['email'] = title
+    new_client['totalGB'] = total_traffics
+    new_client['subId'] = randomStringDigits (10)
+    # add new client to clients
+    clients['clients'].append(new_client)
+
+    sql_traffic_tbl = f"INSERT INTO client_traffics  (`inbound_id`, `enable`, `email`, `total`, `up`, `down`, `expiry_time`) VALUES ({inbound_id}, 1, '{title}', {total_traffics}, 0, 0, 0)"
+
     try:
-      servername = base_setting['tlsSettings']['serverName']
-      security = base_setting['security']
-      withtls = True
-    except:
-      withtls = False
-      
-    
-      
-    
-    
-    # client_traffics table
-    settings = main_data[0][0]
-    
-    data = json.loads(settings)['clients']
-    
-    
+      c.execute(sql_traffic_tbl)
+      conn.commit()
+    except Exception as error:
+      return (error)
+    try:  
+      c.execute("UPDATE inbounds SET settings = ? WHERE port = ?", (json.dumps(clients, indent = 4, sort_keys = True),inbound_port_target))
+      conn.commit()
+      conn.close()
+    except sqlite3.OperationalError as e:
+      return (e)
 
-    result = []
-    for i in range(item_count):
-      id = str(uuid.uuid1())
-      
-      email = randomStringDigits(10) + "@x-ui-english.dev"
-      c.execute("INSERT INTO client_traffics VALUES (?,?,?,?,?,?,?,?) ", (None, inbound_id, 1, email, 0, 0, expire_date, total_traffics))
-     
-      
-      if withtls:
-        newData = data[0].copy()
-        newData['id'] = id
-        newData['id'] = id
-        newData['email'] = email
-        newData['limitIp'] = limit_ip_count
-        newData['totalGB'] = total_traffics
-        newData['expiryTime'] = expire_date
-        data.append(newData)
-        settings = json.dumps({"clients": data, "decryption": "none", "fallbacks": []})
-        result.append("vless://" +
-                    id + "@" + baseurl + ':'
-                    + str(port) + '?type='+network+'&security=' + security  + '&path=%2F' + '&host=' + servername +  '&sni=' +  servername + 
-                    '#'
-                    + title)
-      else:
-        newData = data[0].copy()
-        newData['id'] = id
-        newData['email'] = email
-        newData['limitIp'] = limit_ip_count
-        newData['totalGB'] = total_traffics
-        newData['expiryTime'] = expire_date
-        data.append(newData)
-        settings = json.dumps({"clients": data, "disableInsecureEncryption": False})
-        result.append("vless://" +  id + "@" + baseurl + ':'  + str(port) + '?type='+network+  '#' + title)
-        
-        
-    c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (settings, inbound_id))
-
-    conn.commit()
-    conn.close()
-    
-    
     # restart x-ui
-    time.sleep(2.0)
-    os.system("systemctl restart x-ui")
-
-    return jsonpickle.encode(result)
+    time.sleep(1.0)
+    restart_xui_in_thread()
+    return "added"
   
+@app.route('/user_usage', methods=['GET', 'POST'])
+def user_usage():
+  email = request.args.get('email', type = str)
+  
+
+  
+  
+  conn = sqlite3.connect(dburl)
+  c = conn.cursor()
+  
+  
+    
+  c.execute(f"SELECT * FROM client_traffics WHERE `email` = '{email}' LIMIT 1")
+  
+  main_data  = c.fetchall()
+  
+  
+  # get up and down
+  up = main_data[0][4]
+  down = main_data[0][5]
+  used = up + down
+  
+  return str({"used": used})
+  
+  
+@app.route('/disable_user', methods=['GET', 'POST'])
+def disable_user():
+  email = request.args.get('email', type = str)
+
+  sql = f"SELECT inbound_id FROM client_traffics WHERE `email`  =  '{email}' LIMIT 1"
+  conn = sqlite3.connect(dburl)
+  # run 
+  c = conn.cursor()
+  c.execute(sql)
+  main_data  = c.fetchall()
+  inbound_id = main_data[0][0]
+  # c.execute(f"UPDATE client_traffics SET `enable` = 0 WHERE `email` = '{email}'")
+  
+  # conn.commit()
+  c.execute(f"SELECT settings  FROM inbounds WHERE id = {inbound_id} LIMIT 1")
+  # fetch one
+  main_data  =  c.fetchall()
+  clients = json.loads(main_data[0][0])
+  users = clients['clients']
+  for i in range(len(users)):
+    if users[i]['email'] == email:
+      users[i]['enable'] = False
+      break
+  clients['clients'] = users
+  try:  
+    c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (json.dumps(clients, indent = 4, sort_keys = True),inbound_id))
+    conn.commit()
+    
+  except sqlite3.OperationalError as e:
+    return (e)
+  
+  conn.close()
+  
+  # os.system("systemctl restart x-ui")
+  time.sleep(1.0)
+  
+  # run in background : restart_xui()
+  restart_xui_in_thread()
+  
+  return {"status": "success", "email": email, "message": "user disabled"}
+  
+@app.route('/enable_user', methods=['GET', 'POST'])
+def enable_user():
+  email = request.args.get('email', type = str)
+  sql = f"SELECT inbound_id FROM client_traffics WHERE `email`  =  '{email}' LIMIT 1"
+  conn = sqlite3.connect(dburl)
+  # run 
+  c = conn.cursor()
+  c.execute(sql)
+  main_data  = c.fetchall()
+  inbound_id = main_data[0][0]
+  # c.execute(f"UPDATE client_traffics SET `enable` = 0 WHERE `email` = '{email}'")
+  
+  # conn.commit()
+  c.execute(f"SELECT settings  FROM inbounds WHERE id = {inbound_id} LIMIT 1")
+  # fetch one
+  main_data  =  c.fetchall()
+  clients = json.loads(main_data[0][0])
+  users = clients['clients']
+  for i in range(len(users)):
+    if users[i]['email'] == email:
+      users[i]['enable'] = True
+      break
+  clients['clients'] = users
+  try:  
+    c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (json.dumps(clients, indent = 4, sort_keys = True),inbound_id))
+    conn.commit()
+    
+  except sqlite3.OperationalError as e:
+    return (e)
+  
+  conn.close()
+  # os.system("systemctl restart x-ui")
+  time.sleep(1.0)
+  restart_xui_in_thread()
+  return {"status": "success", "email": email, "message": "user enable"}
+  
+
 @app.route('/remove', methods=['GET', 'POST'])
 def remove_user():
     id = request.args.get('id', type = str)
@@ -357,7 +425,7 @@ def chnage_ip_limit():
   
 @app.route('/restart/x-ui', methods=['GET', 'POST'])
 def restart_xui():
-    os.system("systemctl restart x-ui")
+    restart_xui_in_thread()
     return "Restarted X-UI"
     
 
