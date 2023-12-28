@@ -61,7 +61,7 @@ def restart_xui_in_thread():
 @app.route('/create', methods=['GET', 'POST'])
 def create_user():
     item_count = request.args.get('item_count', default = 1, type = int)
-    expire_date_day = request.args.get('expire', default = 30, type = int)
+    expire_date = request.args.get('expire', default = 0, type = int)
     limit_ip_count = request.args.get('limit_ip_count', default = 1, type = int)
     baseurl = request.args.get('baseurl', default = "mtn2amn.amnbridge.top", type = str)
     title = request.args.get('title', default = "Speedoooooooooooooo", type = str)
@@ -76,31 +76,52 @@ def create_user():
     # connect to db
     conn = sqlite3.connect(dburl)
 
-    # convert expire_date_day to timestamp + 000
-    expire_date = ((expire_date_day * 86400) + int(jdatetime.datetime.now().timestamp()) ) * 1000
+
+    if(expire_date != 0):  
+      # convert expire_date_day to timestamp + 000
+      expire_date = ((expire_date * 86400) + int(jdatetime.datetime.now().timestamp()) ) * 1000
     
     # convert total_traffics to bytes
 
     c = conn.cursor()
     
+    
+    
+    
+    # check title is exist
+    c.execute("SELECT id FROM client_traffics WHERE email = ?", (title,))
+    # if more then 0 return
+    if len(c.fetchall()) > 0:
+      return {"status": "error", "message": "title is already exist"}
+    
+    
+    
     # inbound table
     c.execute("SELECT settings,id  FROM inbounds WHERE port = ? LIMIT 1", (inbound_port_target,))
     # fetch one
     main_data  =  c.fetchall()
+    print(main_data)
     clients = json.loads(main_data[0][0])
     inbound_id =  main_data[0][1]
+    
+    for client in clients['clients']:
+      if client['id'] == str(id):
+        return {"status": "error", "message": "id is already exist"}
 
     first_client = (clients['clients'][0])
     new_client = first_client.copy()
-    new_client['id'] = id
-    new_client['totalGB'] = total_traffics
-    new_client['email'] = title
-    new_client['totalGB'] = total_traffics
-    new_client['subId'] = randomStringDigits (10)
+    new_client['id'] = str(id)
+    new_client['totalGB'] = int(total_traffics)
+    new_client['email'] = str(title)
+    new_client['subId'] = str(randomStringDigits (10))
+    new_client['enable'] = True
+    new_client['expiryTime'] = int(expire_date)
+
+      
     # add new client to clients
     clients['clients'].append(new_client)
 
-    sql_traffic_tbl = f"INSERT INTO client_traffics  (`inbound_id`, `enable`, `email`, `total`, `up`, `down`, `expiry_time`) VALUES ({inbound_id}, 1, '{title}', {total_traffics}, 0, 0, 0)"
+    sql_traffic_tbl = f"INSERT INTO client_traffics  (`inbound_id`, `enable`, `email`, `total`, `up`, `down`, `expiry_time`) VALUES ({inbound_id}, 1, '{title}', {int(total_traffics)}, 0, 0,  {int(expire_date)})"
 
     try:
       c.execute(sql_traffic_tbl)
@@ -445,7 +466,7 @@ def restart_force():
     return 'system rebooting'
   
 if __name__ == '__main__':
-  app.run(host='0.0.0.0')
+  app.run(host='0.0.0.0' , port=4000)
   
   
 # ok
