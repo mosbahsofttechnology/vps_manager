@@ -9,8 +9,8 @@ mydb = mysql.connector.connect(
   database="lhs"
 )
 
-# dburl = "/etc/x-ui/x-ui.db"
-dburl = "x-ui.db"
+dburl = "/etc/x-ui/x-ui.db"
+# dburl = "x-ui.db"
 def get_my_ip():
   import socket
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
