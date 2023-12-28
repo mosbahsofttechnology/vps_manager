@@ -35,8 +35,18 @@ sudo systemctl daemon-reload
 sudo systemctl enable manager_vps.service
 sudo systemctl restart manager_vps.service
 
+
+
 echo ""
 echo ""
 echo ""
 echo "success Install MANAGER"
 echo ""
+
+# echo "start to add usage reporter in crontab "
+crontab -l >/tmp/c1
+echo '*/5 * * * * /usr/bin/python3 /root/vps_manager/usage_reporter.py' >>/tmp/c1
+crontab /tmp/c1
+
+echo "sucessfully added usage reporter in crontab"
+ 
