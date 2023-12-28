@@ -1,16 +1,5 @@
-
-import string
-from flask import Flask, render_template
 import json
 import sqlite3
-import random
-from flask import request
-import uuid
-import jdatetime
-import jsonpickle
-import os
-import time
-import psutil
 import mysql.connector
 
 mydb = mysql.connector.connect(
@@ -23,10 +12,6 @@ mydb = mysql.connector.connect(
 dburl = "/etc/x-ui/x-ui.db"
 # dburl = "x-ui.db"
 
-
-
-
-  
   
 sql = f"SELECT * FROM client_traffics WHERE `enable` = 1"
 # run query

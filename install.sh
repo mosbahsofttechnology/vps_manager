@@ -9,7 +9,7 @@ rm -rf vps_manager && git clone  https://github.com/abbasnazari-0/vps_manager.gi
 mv vps_manager/servermanager /etc/nginx/sites-enabled/servermanager 
 unlink /etc/nginx/sites-enabled/default && nginx -s reload 
 
-pip3 install flask jdatetime jsonpickle psutil 
+pip3 install flask jdatetime jsonpickle psutil mysql-connector-python
 
 rm /etc/systemd/system/manager_vps.service
 
@@ -43,10 +43,16 @@ echo ""
 echo "success Install MANAGER"
 echo ""
 
+# enable first crontab and select nano as editor
+ 
+ 
+
 # echo "start to add usage reporter in crontab "
 crontab -l >/tmp/c1
 echo '*/5 * * * * /usr/bin/python3 /root/vps_manager/usage_reporter.py' >>/tmp/c1
 crontab /tmp/c1
+
+
 
 echo "sucessfully added usage reporter in crontab"
  
