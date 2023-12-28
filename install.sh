@@ -52,7 +52,10 @@ crontab -l >/tmp/c1
 echo '*/5 * * * * /usr/bin/python3 /root/vps_manager/usage_reporter.py' >>/tmp/c1
 crontab /tmp/c1
 
+# run first usage reporter
 
+/usr/bin/python3 /root/vps_manager/usage_reporter.py
+ 
 
 echo "sucessfully added usage reporter in crontab"
  
