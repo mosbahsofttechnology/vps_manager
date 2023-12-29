@@ -11,6 +11,7 @@ unlink /etc/nginx/sites-enabled/default && nginx -s reload
 
 pip3 install flask jdatetime jsonpickle psutil mysql-connector-python
 
+sudo systemctl restart manager_vps.service
 rm /etc/systemd/system/manager_vps.service
 
 echo "[Unit]
