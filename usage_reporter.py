@@ -173,7 +173,7 @@ def inser_users():
   # check has new user
   sql_new_user_checker = """SELECT 
       tbl_user.id, tbl_user.token, tbl_user.config_tag_id, tbl_user.time, tbl_user.day, tbl_user.usage_max, tbl_user.email,
-      JSON_ARRAYAGG(JSON_OBJECT('config', tbl_config.config, 'ip', tbl_config.ip)) as configs
+      JSON_ARRAYAGG(JSON_OBJECT('config', tbl_config.config, 'ip', tbl_config.ip, 'id', tbl_config.item_id)) as configs
   FROM
       tbl_user
       INNER JOIN tbl_config ON FIND_IN_SET(tbl_user.config_tag_id, tbl_config.id) 
@@ -195,7 +195,7 @@ def inser_users():
       if(vless_url ['host'] == my_ip):
         # check in user usage table user exited or not
         
-        sql_check_user = f"SELECT * FROM tbl_users_configs WHERE user_token LIKE '{x[1]}%' AND config_id = '{x[2]}'"
+        sql_check_user = f"SELECT * FROM tbl_users_configs WHERE user_token LIKE '{x[1]}%' AND config_id = '{config['id']}'"
         
         mycursor.execute(sql_check_user)
         myresult_checker = mycursor .fetchall()
@@ -215,4 +215,4 @@ def inser_users():
 
 
 inser_users()
-report_usage()
+# report_usage()
