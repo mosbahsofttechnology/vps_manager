@@ -205,14 +205,14 @@ def inser_users():
         
         email = x[1]
         id = x[6]
-        config_id = x[2]
+        config_id = config['id']
         day = x[4]
         mass = x[5]
         port = vless_url ['port']
-        create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(config_id), day, config_id)
+        create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(config['id']), day, config_id)
     
 
 
 
 inser_users()
-# report_usage()
+report_usage()
