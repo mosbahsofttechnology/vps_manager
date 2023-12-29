@@ -49,7 +49,7 @@ def create_user_in_target_server(address, port, uuid, mass, token, day, config_i
     # except Exception as e:
     #     print("check_user_is_exist_in_target_server error : " + str(e))
     print('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
-    response = requests.post('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '', timeout=10)
+    response = requests.post('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
     print(response.text)
     if(response.status_code == 200):
         if(json.loads(response.text)['status'] == "error"):
