@@ -8,6 +8,7 @@ import re
 import string
 import random
 import time
+import os
 mydb = mysql.connector.connect(
   host="37.152.182.34",
   user="manager",
@@ -23,10 +24,8 @@ dburl = "/etc/x-ui/x-ui.db"
 conn = sqlite3.connect(dburl)
 
 def restart_xui_in_thread():
-  def restart_service():
-    os.system("systemctl restart x-ui")
-  thread = threading.Thread(target=restart_service)
-  thread.start()
+  os.system("systemctl restart x-ui")
+  
 def get_my_ip():
   import socket
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
