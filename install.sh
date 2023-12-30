@@ -49,7 +49,7 @@ echo ""
  
 
 # echo "start to add usage reporter in crontab "
-(crontab -l | grep -v '/usr/bin/python3 /root/vps_manager/usage_reporter.py'; echo '*/5 * * * * /usr/bin/python3 /root/vps_manager/usage_reporter.py') | crontab -
+(crontab -l | grep -v '/usr/bin/python3 /root/vps_manager/usage_reporter.py'; echo '*/10 * * * * /usr/bin/python3 /root/vps_manager/usage_reporter.py') | crontab -
 # run first usage reporter
 
 /usr/bin/python3 /root/vps_manager/usage_reporter.py
