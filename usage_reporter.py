@@ -22,7 +22,11 @@ dburl = "/etc/x-ui/x-ui.db"
 # run query
 conn = sqlite3.connect(dburl)
 
-
+def restart_xui_in_thread():
+  def restart_service():
+    os.system("systemctl restart x-ui")
+  thread = threading.Thread(target=restart_service)
+  thread.start()
 def get_my_ip():
   import socket
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -311,3 +315,4 @@ report_usage()
 # close connection
 conn.close()
 mydb.close()
+restart_xui_in_thread()
