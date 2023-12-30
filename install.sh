@@ -52,7 +52,6 @@ echo ""
 (crontab -l | grep -v '/usr/bin/python3 /root/vps_manager/usage_reporter.py'; echo '*/10 * * * * /usr/bin/python3 /root/vps_manager/usage_reporter.py') | crontab -
 # run first usage reporter
 
-/usr/bin/python3 /root/vps_manager/usage_reporter.py
  
 
 echo "sucessfully added usage reporter in crontab"
