@@ -310,3 +310,4 @@ report_usage()
 
 # close connection
 conn.close()
+mydb.close()
