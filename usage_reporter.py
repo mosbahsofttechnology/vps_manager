@@ -5,12 +5,24 @@ import ipaddress
 import requests
 from urllib.parse import urlparse, parse_qs
 import re
+import string
+import random
+import time
 mydb = mysql.connector.connect(
   host="37.152.182.34",
   user="manager",
   password="nazari@0794054171@As",
   database="lhs"
 )
+import jdatetime
+
+dburl = "/etc/x-ui/x-ui.db"
+# dburl = "x-ui.db"
+
+# run query
+conn = sqlite3.connect(dburl)
+
+
 def get_my_ip():
   import socket
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -18,7 +30,86 @@ def get_my_ip():
   ip = s.getsockname()[0]
   s.close()
   return ip
+
+def randomStringDigits(stringLength=10):
+  lettersAndDigits = string.ascii_letters + string.digits
+  return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
+
+
 my_ip = get_my_ip()
+def create_user( inbound_port_target, id, total_traffics , title, expire_date, config_id):
+    # print('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
+
+    if(inbound_port_target == 0):
+        return "Please select a port 2" 
+    if(total_traffics != 0):
+      total_traffics = int(total_traffics) * 1024 * 1024 * 1024
+
+        # connect to db
+    conn = sqlite3.connect(dburl)
+
+    expire_date = int(expire_date)
+    if(expire_date != 0):  
+      # convert expire_date_day to timestamp + 000
+      expire_date = ((expire_date * 86400) + int(jdatetime.datetime.now().timestamp()) ) * 1000
+    
+    # convert total_traffics to bytes
+
+    c = conn.cursor()
+    
+
+    
+    # check title is exist
+    c.execute("SELECT id FROM client_traffics WHERE email = ?", (title,))
+    # if more then 0 return
+    if len(c.fetchall()) > 0:
+      return {"status": "error", "message": "title is already exist"}
+    
+    
+    
+    # inbound table
+    c.execute("SELECT settings,id  FROM inbounds WHERE port = ? LIMIT 1", (inbound_port_target,))
+    # fetch one
+    main_data  =  c.fetchall()
+    
+    clients = json.loads(main_data[0][0])
+    inbound_id =  main_data[0][1]
+    
+    for client in clients['clients']:
+      if client['id'] == str(id):
+        return {"status": "error", "message": "id is already exist"}
+
+    first_client = (clients['clients'][0])
+    new_client = first_client.copy()
+    new_client['id'] = str(id)
+    new_client['totalGB'] = int(total_traffics)
+    new_client['email'] = str(title)
+    new_client['subId'] = str(randomStringDigits (10))
+    new_client['enable'] = True
+    new_client['expiryTime'] = int(expire_date)
+
+      
+    # add new client to clients
+    clients['clients'].append(new_client)
+
+    sql_traffic_tbl = f"INSERT INTO client_traffics  (`inbound_id`, `enable`, `email`, `total`, `up`, `down`, `expiry_time`) VALUES ({inbound_id}, 1, '{title}', {int(total_traffics)}, 0, 0,  {int(expire_date)})"
+
+    try:
+      c.execute(sql_traffic_tbl)
+      conn.commit()
+    except Exception as error:
+      return (error)
+    try:  
+      c.execute("UPDATE inbounds SET settings = ? WHERE port = ?", (json.dumps(clients, indent = 4, sort_keys = True),inbound_port_target))
+      conn.commit()
+    except sqlite3.OperationalError as e:
+      return (e)
+
+    
+    # restart x-ui
+    time.sleep(1.0)
+    # restart_xui_in_thread()
+    return {"status": "success", "message": "user creating", "data": ""}
 
 def convert_mapped_ipv4(address):
     if address.startswith('::ffff:'):
@@ -48,22 +139,26 @@ def create_user_in_target_server(address, port, uuid, mass, token, day, config_i
         #     return
     # except Exception as e:
     #     print("check_user_is_exist_in_target_server error : " + str(e))
-    print('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
-    response = requests.post('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
-    print(response.text)
-    if(response.status_code == 200):
-        if(json.loads(response.text)['status'] == "error"):
-              print (f"cant run in {address}")
-        if(json.loads(response.text)['status'] == 'success'):
-            sql = f"INSERT INTO tbl_users_configs (user_token, config_id) VALUES ('{token}', '{config_id}')"
-            mycursor.execute(sql)
-            mydb.commit()
-            print (f"successfully created on {address}")
+    # print('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
+    # response = requests.post('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
+    res = create_user (  port,   uuid,  mass,  token,  day,  config_id)
+    # response = requests.post('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
+    # print(response.text)
+    # if(response.status_code == 200):
+    # print (res)
+    if((res)['status'] == "error"):
+        print(res['message'])
             
-    else:
+    if((res)['status'] == 'success'):
+        sql = f"INSERT INTO tbl_users_configs (user_token, config_id) VALUES ('{token}', '{config_id}')"
+        mycursor.execute(sql)
+        mydb.commit()
+        print (f"successfully created on {address}")
+            
+    # else:
         # TODO send error report in telegram
         # sendMessageToTelegramBot (f"ادمین جون مثل اینکه مشکلی در ساخت یوزر برای کاربرمون ایجاد شده \nشناسه کاربر: {token} \n مشکل داخلی: {response.text} \n uuid کاربر : {uuid} \n در سرور {address} \n با این جواب : {json.loads(response.text)} ")
-        print("unkown error")
+        # print("unkown error")
           
 def vless_url_export_ip(uri_config, ipv4):
     address = ''
@@ -114,16 +209,10 @@ def vless_url_export_ip(uri_config, ipv4):
 
 # exit(0)
   
-dburl = "/etc/x-ui/x-ui.db"
-# dburl = "x-ui.db"
 
 
   
-sql = f"SELECT * FROM client_traffics WHERE `enable` = 1"
-# run query
-conn = sqlite3.connect(dburl)
-c = conn.cursor()
-c.execute(sql)
+
  
 
 def find_id_with_email(email):
@@ -148,6 +237,9 @@ def find_id_with_email(email):
 
 
 def report_usage():
+  sql = f"SELECT * FROM client_traffics WHERE `enable` = 1"
+  c = conn.cursor()
+  c.execute(sql)
   # show data 
   main_data  = c.fetchall()
   for  i in main_data:
@@ -168,7 +260,7 @@ def report_usage():
           print(f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'")
           mycursor.execute(f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'")
           mydb.commit()
-  conn.close()
+  
 
 def inser_users():
   # check has new user
@@ -211,9 +303,10 @@ def inser_users():
         mass = x[5]
         port = vless_url ['port']
         create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(config['id']), day, config_id)
-    
-
 
 
 inser_users()
 report_usage()
+
+# close connection
+conn.close()
