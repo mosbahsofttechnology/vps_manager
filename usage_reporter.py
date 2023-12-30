@@ -251,20 +251,35 @@ def report_usage():
     down = i[5]
     my_ip = get_my_ip()
     inboundData = (find_id_with_email(email))
-    if inboundData != None :   
-      mycursor.execute(f"SELECT * FROM tbl_user_usages WHERE `email` = '{email}' AND `user_id` = '{inboundData['id']}' AND port = '{inboundData['port']}' AND  ip = '{my_ip}'")
-      myresult = mycursor.fetchall()
-
-      big_query = ""
-      if len(myresult) == 0:
-        
-          big_query = big_query + (f"INSERT INTO tbl_user_usages (email, user_id, up, down, ip, port) VALUES ('{email}', '{inboundData['id']}', '{up}', '{down}', '{my_ip}', '{inboundData['port']}'); ")
-          
-      else:
-          print(f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'")
-          big_query = big_query +  (f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'; ")
+    if inboundData is not None:
+      try:
+          mycursor.execute("""
+              INSERT INTO tbl_user_usages (email, user_id, up, down, ip, port)
+              VALUES (%s, %s, %s, %s, %s, %s)
+              ON DUPLICATE KEY UPDATE
+              up = VALUES(up), down = VALUES(down)
+          """, (email, inboundData['id'], up, down, my_ip, inboundData['port']))
+          print("222")
           mydb.commit()
-    mycursor.execute(big_query)
+      except Exception as e:
+          # در صورت خطا، می‌توانید اقدامات مناسبی را انجام دهید، مانند ثبت خطا در یک لاگ یا بازگشت به حالت قبلی
+          print(f"Error: {e}")
+          mydb.rollback()
+
+    # if inboundData != None :   
+    #   mycursor.execute(f"SELECT * FROM tbl_user_usages WHERE `email` = '{email}' AND `user_id` = '{inboundData['id']}' AND port = '{inboundData['port']}' AND  ip = '{my_ip}'")
+    #   myresult = mycursor.fetchall()
+
+    #   big_query = ""
+    #   if len(myresult) == 0:
+        
+    #       big_query = big_query + (f"INSERT INTO tbl_user_usages (email, user_id, up, down, ip, port) VALUES ('{email}', '{inboundData['id']}', '{up}', '{down}', '{my_ip}', '{inboundData['port']}'); ")
+          
+    #   else:
+    #       print(f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'")
+    #       big_query = big_query +  (f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'; ")
+    #       mydb.commit()
+    # mycursor.execute(big_query)
     mydb.commit()
 
 def inser_users():
