@@ -23,6 +23,32 @@ dburl = "/etc/x-ui/x-ui.db"
 # run query
 conn = sqlite3.connect(dburl)
 
+def sendMessageToTelegramBot(message):
+    APITOKEN = "6117050323:AAGBvHWFrfR-c8vNHH7Bnl1ittQl2VU0NdE"
+
+    # آیدی چت گروه یا کاربری که میخوای پیام رو بهش بفرستی رو اینجا قرار بده
+    chat_id = "@vps_status"
+
+    # URL آدرس API برای ارسال پیام
+    url = f"https://api.telegram.org/bot{APITOKEN}/sendMessage"
+
+    # پارامترهای بدنه درخواست
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        
+    }
+
+    # ارسال درخواست POST به آدرس API
+    response = requests.post(url, json=payload)
+
+    # بررسی وضعیت پاسخ
+    if response.status_code == 200:
+        return "پیام با موفقیت ارسال شد."
+    else:
+        return "مشکلی در ارسال پیام به وجود آمد."
+
+
 def restart_xui_in_thread():
   os.system("systemctl restart x-ui")
   
@@ -40,6 +66,46 @@ def randomStringDigits(stringLength=10):
 
 
 my_ip = get_my_ip()
+
+
+def disable_user(email):
+  sql = f"SELECT inbound_id FROM client_traffics WHERE `email`  = '{email}' LIMIT 1"
+  
+  conn = sqlite3.connect(dburl)
+  # run 
+  c = conn.cursor()
+  c.execute(sql)
+  main_data  = c.fetchall()
+  if len(main_data) == 0:
+    return {"status": "error", "message": "port is not found"}
+  inbound_id = main_data[0][0]
+  # c.execute(f"UPDATE client_traffics SET `enable` = 0 WHERE `email` = '{email}'")
+  
+  # conn.commit()
+  c.execute(f"SELECT settings  FROM inbounds WHERE id = {inbound_id} LIMIT 1")
+  # fetch one
+  main_data  =  c.fetchall()
+  clients = json.loads(main_data[0][0])
+  users = clients['clients']
+  for i in range(len(users)):
+    if users[i]['email'] == email:
+      if( users[i]['enable'] == False ):
+        return {"status": "success", "email": email, "message": "user already disabled"}
+      users[i]['enable'] = False
+      break
+    
+
+  clients['clients'] = users
+  try:  
+    c.execute("UPDATE inbounds SET settings = ? WHERE id = ?", (json.dumps(clients, indent = 4, sort_keys = True),inbound_id))
+    conn.commit()
+    
+  except sqlite3.OperationalError as e:
+    return (e)
+  
+
+  return {"status": "success", "email": email, "message": "user disabled"}
+
 def create_user( inbound_port_target, id, total_traffics , title, expire_date, config_id):
     # print('http://' + address + ':4000' + '/create?inbound_port_target=' + str(port) + '&id=' + uuid + '&trafiic=' + str(mass) + '&title=' + token + '&expire=' + str(day) + '')
 
@@ -68,14 +134,21 @@ def create_user( inbound_port_target, id, total_traffics , title, expire_date, c
     if len(c.fetchall()) > 0:
       return {"status": "error", "message": "title is already exist"}
     
-    
+    print(f"SELECT settings,id  FROM inbounds WHERE port = {int(inbound_port_target)} LIMIT 1")
     
     # inbound table
-    c.execute("SELECT settings,id  FROM inbounds WHERE port = ? LIMIT 1", (inbound_port_target,))
+    c.execute(f"SELECT settings,id  FROM inbounds WHERE port = {int(inbound_port_target)} LIMIT 1")
     # fetch one
     main_data  =  c.fetchall()
     
-    clients = json.loads(main_data[0][0])
+    
+    if main_data == "[]" or main_data == []:
+        return {"status": "error", "message": "1port is not found"}
+      
+    # orubt*
+    # print(main_data)
+    # print(main_data)
+    clients = json.loads(main_data[0][0]) 
     inbound_id =  main_data[0][1]
     
     for client in clients['clients']:
@@ -182,12 +255,15 @@ def vless_url_export_ip(uri_config, ipv4):
     elif security == 'reality':
         # Return the address value (IP address)
         matches = re.search('@(.*):', uri_config)
-        ip_address = matches.group(1) if matches else ''
+        ip_address = matches.group(1) if matches else ''   
         address = ip_address
     elif security == 'tls':
         # Return the host value
         address = query_params.get('host', '')
-
+    else:
+        matches = re.search('@(.*):', uri_config)
+        ip_address = matches.group(1) if matches else ''
+        address = ip_address
     # if address is list  convert to string
     if isinstance(address, list):
         address = address [0]
@@ -205,7 +281,8 @@ def vless_url_export_ip(uri_config, ipv4):
     if (is_ip_or_url(address) == True):
         address = ipv4
         
-        
+    if (address == '' or address == None):
+        address = ipv4
     return {'host': address, 'port': url_parts.port}
 
 
@@ -238,7 +315,6 @@ def find_id_with_email(email):
       return  {'id': client['id'], "inbound_id" :  inbound_id, "port": port}
 
 
-
 def report_usage():
   sql = f"SELECT * FROM client_traffics WHERE `enable` = 1"
   c = conn.cursor()
@@ -249,7 +325,7 @@ def report_usage():
     email = i[3]
     up = i[4]
     down = i[5]
-    my_ip = get_my_ip()
+    
     inboundData = (find_id_with_email(email))
     if inboundData is not None:
       try:
@@ -259,34 +335,19 @@ def report_usage():
               ON DUPLICATE KEY UPDATE
               up = VALUES(up), down = VALUES(down)
           """, (email, inboundData['id'], up, down, my_ip, inboundData['port']))
-          print("222")
           mydb.commit()
       except Exception as e:
           # در صورت خطا، می‌توانید اقدامات مناسبی را انجام دهید، مانند ثبت خطا در یک لاگ یا بازگشت به حالت قبلی
           print(f"Error: {e}")
           mydb.rollback()
 
-    # if inboundData != None :   
-    #   mycursor.execute(f"SELECT * FROM tbl_user_usages WHERE `email` = '{email}' AND `user_id` = '{inboundData['id']}' AND port = '{inboundData['port']}' AND  ip = '{my_ip}'")
-    #   myresult = mycursor.fetchall()
-
-    #   big_query = ""
-    #   if len(myresult) == 0:
-        
-    #       big_query = big_query + (f"INSERT INTO tbl_user_usages (email, user_id, up, down, ip, port) VALUES ('{email}', '{inboundData['id']}', '{up}', '{down}', '{my_ip}', '{inboundData['port']}'); ")
-          
-    #   else:
-    #       print(f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'")
-    #       big_query = big_query +  (f"UPDATE tbl_user_usages SET up = '{up}', down = '{down}' WHERE email = '{email}' AND user_id = '{inboundData['id']}' AND ip = '{my_ip}' AND port = '{inboundData['port']}'; ")
-    #       mydb.commit()
-    # mycursor.execute(big_query)
     mydb.commit()
 
 def inser_users():
   # check has new user
   sql_new_user_checker = """SELECT 
       tbl_user.id, tbl_user.token, tbl_user.config_tag_id, tbl_user.time, tbl_user.day, tbl_user.usage_max, tbl_user.email,
-      JSON_ARRAYAGG(JSON_OBJECT('config', tbl_config.config, 'ip', tbl_config.ip, 'id', tbl_config.item_id)) as configs
+      JSON_ARRAYAGG(JSON_OBJECT('config', tbl_config.config, 'ip', tbl_config.ip, 'id', tbl_config.item_id)) as configs, tbl_user.user_enabling
   FROM
       tbl_user
       INNER JOIN tbl_config ON FIND_IN_SET(tbl_user.config_tag_id, tbl_config.id) 
@@ -304,26 +365,37 @@ def inser_users():
     configs = json.loads(x[7])
     for config in configs:
       vless_url = vless_url_export_ip(config['config'], config['ip'])
-      print(vless_url)
+      # print(str(vless_url ['host'] == my_ip) + config['config'])
       if(vless_url ['host'] == my_ip):
         # check in user usage table user exited or not
         
-        sql_check_user = f"SELECT * FROM tbl_users_configs WHERE user_token LIKE '{x[1]}%' AND config_id = '{config['id']}'"
+        # check for user is enabled
+        is_enabled = x[8]
+        if(is_enabled == 0):
+          # return
+          disable_user(x[1] + "_" + str(config['id']))
+          continue
+        
+        # check for user is inserted in main table
+        sql_check_user = f"SELECT * FROM tbl_users_configs WHERE user_token = '{x[1]}_{config['id']}'"
         
         mycursor.execute(sql_check_user)
         myresult_checker = mycursor .fetchall()
         if(len(myresult_checker) > 0):
+            # continue
           continue
-    
         
+        # instring to table and creating USER
         email = x[1]
         id = x[6]
         config_id = config['id']
         day = x[4]
         mass = x[5]
         port = vless_url ['port']
+        # print()
         create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(config['id']), day, config_id)
-
+      if (vless_url['host'] == None):
+       sendMessageToTelegramBot(f"ادمین جون من ربات منیجر یوزر ها هستم\n مثل اینکه آیپی این کانفیگ رو فراموش کردی تو جدول بزاری\n ممنون میشم یه نیم نگاهی بندازی\nکانفیگ مورد نظر :  \n{config['config']} ")
 
 inser_users()
 report_usage()
