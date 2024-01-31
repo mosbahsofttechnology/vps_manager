@@ -351,7 +351,7 @@ def inser_users():
           continue
         
         # check for user is inserted in main table
-        sql_check_user = f"SELECT * FROM tbl_users_configs WHERE user_token = '{x[1]}_{config['id']}'"
+        sql_check_user = f"SELECT id FROM tbl_users_configs WHERE user_token = '{x[1]}_{config['id']}' LIMIT 1"
         
         mycursor.execute(sql_check_user)
         myresult_checker = mycursor .fetchall()
