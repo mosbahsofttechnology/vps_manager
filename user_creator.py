@@ -11,9 +11,10 @@ import time
 import os
 mydb = mysql.connector.connect(
   host="37.152.182.34",
-  user="manager",
+  user="manager2",
   password="nazari@0794054171@As",
-  database="lhs"
+  database="lhs",
+  
 )
 import jdatetime
 
@@ -185,7 +186,7 @@ def create_user( inbound_port_target, id, total_traffics , title, expire_date, c
 
     
     # restart x-ui
-    time.sleep(1.0)
+    time.sleep(0.5)
     # restart_xui_in_thread()
     return {"status": "success", "message": "user creating", "data": ""}
 
@@ -317,59 +318,114 @@ def find_id_with_email(email):
       return  {'id': client['id'], "inbound_id" :  inbound_id, "port": port}
 
 
-def inser_users():
-  # check has new user
-  sql_new_user_checker = """SELECT 
-      tbl_user.id, tbl_user.token, tbl_user.config_tag_id, tbl_user.time, tbl_user.day, tbl_user.usage_max, tbl_user.email,
-      JSON_ARRAYAGG(JSON_OBJECT('config', tbl_config.config, 'ip', tbl_config.ip, 'id', tbl_config.item_id)) as configs, tbl_user.user_enabling
-  FROM
-      tbl_user
-      INNER JOIN tbl_config ON FIND_IN_SET(tbl_user.config_tag_id, tbl_config.id) 
-  WHERE
-      tbl_user.is_new = 'new_user' 
-  GROUP BY
-      tbl_user.id;
-  """
+def get_all_users():
+  sql = f"""SELECT
+	tbl_user.id,
+	tbl_user.token,
+	tbl_user.config_tag_id,
+	tbl_user.TIME,
+	tbl_user.DAY,
+	tbl_user.usage_max,
+	tbl_user.email,
+	tbl_config.config,
+	tbl_config.ip,
+	tbl_config.item_id,
+	
+	tbl_user.user_enabling ,
+	tbl_users_configs.id as ConfigCreated
+FROM
+	tbl_user
+	INNER JOIN tbl_config ON FIND_IN_SET( tbl_user.config_tag_id, tbl_config.id ) 
+	LEFT JOIN tbl_users_configs ON tbl_users_configs.user_token = CONCAT(tbl_user.token, "_", tbl_config.item_id)
+WHERE
+
+	tbl_user.is_new = 'new_user'  AND tbl_config.ip = '{my_ip}'
+	
+ORDER BY tbl_user.id DESC"""
   
-  # run query
-  mycursor.execute(sql_new_user_checker)
+  mycursor.execute(sql)
   myresult = mycursor.fetchall()
+  
+  return myresult
+
+def get_all_configs():
+  sql = "SELECT 			 *			 FROM 			 tbl_config "
+  mycursor.execute(sql)
+  myresult = mycursor.fetchall()
+  # return as list
+  return myresult
+  
+  pass
+
+def convert_numbers(input_string):
+    conversion_map = {'1': 1, '2': 110, '3': 112, '4': 140}
+    input_list = [int(num) for num in input_string.split(',')]
+    return [conversion_map.get(str(num), num) for num in input_list]
+
+def inser_users():
+
+  myresult = get_all_users()
+  
+  # configs =  get_all_configs()
+  
+  
 
   for x in myresult:
-    configs = json.loads(x[7])
-    for config in configs:
-      vless_url = vless_url_export_ip(config['config'], config['ip'])
-      # print(str(vless_url ['host'] == my_ip) + config['config'])
-      if(vless_url ['host'] == my_ip):
-        # check in user usage table user exited or not
+    if(x[11] is not None):
+      continue
+    
+    print("not founded")
+      
+    # for config in configs:
+    # config_ids = convert_numbers(str(config[1]))
+    
+    
+    # if(x[2] not in config_ids):
+    #   continue
+    
+    
+    # find in list
+    
+    
+    
+    
+    
+    vless_url = vless_url_export_ip(x[7], x[8])
+    # print(str(vless_url ['host'] == my_ip) + config['config'])
+    if(vless_url ['host'] == my_ip):
+      # check in user usage table user exited or not
+      
+      # check for user is enabled
+      is_enabled = x[10]
+      
+      
+      if(is_enabled == 0):
         
-        # check for user is enabled
-        is_enabled = x[8]
-        if(is_enabled == 0):
-          # return
-          disable_user(x[1] + "_" + str(config['id']))
-          continue
-        
-        # check for user is inserted in main table
-        sql_check_user = f"SELECT id FROM tbl_users_configs WHERE user_token = '{x[1]}_{config['id']}' LIMIT 1"
-        
-        mycursor.execute(sql_check_user)
-        myresult_checker = mycursor .fetchall()
-        if(len(myresult_checker) > 0):
-            # continue
-          continue
-        
-        # instring to table and creating USER
-        email = x[1]
-        id = x[6]
-        config_id = config['id']
-        day = x[4]
-        mass = x[5]
-        port = vless_url ['port']
-        # print()
-        create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(config['id']), day, config_id)
-      if (vless_url['host'] == None):
-       sendMessageToTelegramBot(f"ادمین جون من ربات منیجر یوزر ها هستم\n مثل اینکه آیپی این کانفیگ رو فراموش کردی تو جدول بزاری\n ممنون میشم یه نیم نگاهی بندازی\nکانفیگ مورد نظر :  \n{config['config']} ")
+        # return
+        disable_user(x[1] + "_" + str(x[9]))
+        continue
+      
+      # check for user is inserted in main table
+      sql_check_user = f"SELECT id FROM tbl_users_configs WHERE user_token = '{x[1]}_{x[9]}' LIMIT 1"
+      
+      mycursor.execute(sql_check_user)
+      myresult_checker = mycursor .fetchall()
+      if(len(myresult_checker) > 0):
+          # continue
+        print("user already inserted")
+        continue
+      
+      # instring to table and creating USER
+      email = x[1]
+      id = x[6]
+      config_id = 1
+      day = x[4]
+      mass = x[5]
+      port = vless_url ['port']
+      # print()
+      create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(x[9]), day, config_id)
+    if (vless_url['host'] == None):
+      sendMessageToTelegramBot(f"ادمین جون من ربات منیجر یوزر ها هستم\n مثل اینکه آیپی این کانفیگ رو فراموش کردی تو جدول بزاری\n ممنون میشم یه نیم نگاهی بندازی\nکانفیگ مورد نظر :  \n{config['config']} ")
 
 
 
