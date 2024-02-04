@@ -227,7 +227,15 @@ def create_user_in_target_server(address, port, uuid, mass, token, day, config_i
     # if(response.status_code == 200):
     # print (res)
     if((res)['status'] == "error"):
-        print(res['message'])
+        message = (res['message'])
+        print(message)
+        if(message == "id is already exist" or message =="title is already exist"):
+          sql = f"INSERT INTO tbl_users_configs (user_token, config_id) VALUES ('{token}', '{config_id}')"
+          mycursor.execute(sql)
+          mydb.commit()
+          print (f"successfully created on {address}")
+              
+          
             
     if((res)['status'] == 'success'):
         sql = f"INSERT INTO tbl_users_configs (user_token, config_id) VALUES ('{token}', '{config_id}')"
@@ -332,16 +340,17 @@ def get_all_users():
 	tbl_config.item_id,
 	
 	tbl_user.user_enabling ,
-	tbl_users_configs.id as ConfigCreated
+	 IFNULL(tbl_users_configs.id, 0) as ConfigCreated
 FROM
 	tbl_user
 	INNER JOIN tbl_config ON FIND_IN_SET( tbl_user.config_tag_id, tbl_config.id ) 
 	LEFT JOIN tbl_users_configs ON tbl_users_configs.user_token = CONCAT(tbl_user.token, "_", tbl_config.item_id)
 WHERE
 
-	tbl_user.is_new = 'new_user'  AND tbl_config.ip = '{my_ip}'
+	tbl_user.is_new = 'new_user'  AND tbl_config.ip = '{my_ip}'  AND IFNULL(tbl_users_configs.id, 0) = 0
 	
 ORDER BY tbl_user.id DESC"""
+
   
   mycursor.execute(sql)
   myresult = mycursor.fetchall()
@@ -371,10 +380,10 @@ def inser_users():
   
 
   for x in myresult:
-    if(x[11] is not None):
+    
+    if(x[11] != 0):
       continue
     
-    print("not founded")
       
     # for config in configs:
     # config_ids = convert_numbers(str(config[1]))
@@ -396,24 +405,21 @@ def inser_users():
       # check in user usage table user exited or not
       
       # check for user is enabled
-      is_enabled = x[10]
-      
-      
+      is_enabled = x[10]      
       if(is_enabled == 0):
-        
         # return
         disable_user(x[1] + "_" + str(x[9]))
         continue
       
       # check for user is inserted in main table
-      sql_check_user = f"SELECT id FROM tbl_users_configs WHERE user_token = '{x[1]}_{x[9]}' LIMIT 1"
+      # sql_check_user = f"SELECT id FROM tbl_users_configs WHERE user_token = '{x[1]}_{x[9]}' LIMIT 1"
       
-      mycursor.execute(sql_check_user)
-      myresult_checker = mycursor .fetchall()
-      if(len(myresult_checker) > 0):
-          # continue
-        print("user already inserted")
-        continue
+      # mycursor.execute(sql_check_user)
+      # myresult_checker = mycursor .fetchall()
+      # if(len(myresult_checker) > 0):
+      #     # continue
+      #   print("user already inserted")
+      #   continue
       
       # instring to table and creating USER
       email = x[1]
