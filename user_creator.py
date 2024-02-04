@@ -11,7 +11,7 @@ import time
 import os
 mydb = mysql.connector.connect(
   host="37.152.182.34",
-  user="manager2",
+  user="manager",
   password="nazari@0794054171@As",
   database="lhs",
   
