@@ -1,7 +1,7 @@
 Automatitacly Install : 
 
 
-    bash <(curl -Ls https://raw.githubusercontent.com/mosbahsofttechnology/vps_manager/main/install.sh?token=GHSAT0AAAAAACKWDZ7YO6EJMPTEXT3NUWRSZOREAAA)
+    bash <(curl -Ls https://raw.githubusercontent.com/mosbahsofttechnology/vps_manager/main/install.sh)
 
 
 
