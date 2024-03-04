@@ -340,7 +340,8 @@ def get_all_users():
 	tbl_config.item_id,
 	
 	tbl_user.user_enabling ,
-	 IFNULL(tbl_users_configs.id, 0) as ConfigCreated
+	 IFNULL(tbl_users_configs.id, 0) as ConfigCreated,
+  	tbl_config.port
 FROM
 	tbl_user
 	INNER JOIN tbl_config ON FIND_IN_SET( tbl_user.config_tag_id, tbl_config.id ) 
@@ -428,6 +429,9 @@ def inser_users():
       day = x[4]
       mass = x[5]
       port = vless_url ['port']
+      alternate_port = x[12]
+      if alternate_port == "null" or alternate_port == None or alternate_port == "None":
+      	port = alternate_port
       # print()
       create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(x[9]), day, config_id)
     if (vless_url['host'] == None):
