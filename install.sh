@@ -1,11 +1,10 @@
 
 # get server address from user
 
-read -p "enter server address: " server_address
+read -p "enter manager LHS server address: " server_address
 
 # save server address in vps_manager/config.py
 
-echo  > vps_manager/config.py
 echo  "server_address = '$server_address'" | tee vps_manager/config.py
 
 
