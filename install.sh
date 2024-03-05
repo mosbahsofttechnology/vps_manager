@@ -3,8 +3,11 @@
 
 read -p "enter server address: " server_address
 
-# save server address in env file
-echo "SERVER_ADDRESS=$server_address" >> .env
+# save server address in vps_manager/config.py
+
+echo "server_address = '$server_address'" > vps_manager/config.py
+
+export server_address
 
 # install server manager
 
