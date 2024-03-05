@@ -429,9 +429,9 @@ def inser_users():
       day = x[4]
       mass = x[5]
       port = vless_url ['port']
-      alternate_port = x[12]
-      if alternate_port != "null" :
-      	port = alternate_port
+      alternate_port = int( x[12])
+      if alternate_port != 0 :
+        port = alternate_port
       # print()
       create_user_in_target_server(my_ip, port, id, mass, email + "_" + str(x[9]), day, config_id)
     if (vless_url['host'] == None):
