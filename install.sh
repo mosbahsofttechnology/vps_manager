@@ -1,11 +1,8 @@
 
 # get server address from user
 
-read -p "enter manager LHS server address: " server_address
 
-# save server address in vps_manager/config.py
 
-echo  "server_address = '$server_address'" | tee vps_manager/config.py
 
 
 
@@ -68,6 +65,13 @@ echo ""
 # run first usage reporter
 
  
+
+read -p "enter manager LHS server address: " server_address
+
+# save server address in vps_manager/config.py
+
+echo  "server_address = '$server_address'" | tee vps_manager/config.py
+
 
 echo "sucessfully added usage reporter in crontab"
  
