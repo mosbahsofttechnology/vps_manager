@@ -5,9 +5,10 @@ read -p "enter server address: " server_address
 
 # save server address in vps_manager/config.py
 
-echo "server_address = '$server_address'" > vps_manager/config.py
+echo  > vps_manager/config.py
+echo  "server_address = '$server_address'" | tee vps_manager/config.py
 
-export server_address
+
 
 # install server manager
 
