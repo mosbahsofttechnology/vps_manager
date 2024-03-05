@@ -1,3 +1,14 @@
+
+# get server address from user
+
+read -p "enter server address: " server_address
+
+# save server address in env file
+echo "SERVER_ADDRESS=$server_address" >> .env
+
+# install server manager
+
+
 apt-get install python3 python3-pip unzip nginx gunicorn -y 
 
 pkill gunicorn 
