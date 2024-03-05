@@ -9,8 +9,12 @@ import string
 import random
 import time
 import os
+
+# import config.py
+import config
+
 mydb = mysql.connector.connect(
-  host="37.152.182.34",
+  host= config.server_address,
   user="manager",
   password="nazari@0794054171@As",
   database="lhs"
