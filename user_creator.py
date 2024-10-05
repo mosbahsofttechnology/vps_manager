@@ -120,7 +120,7 @@ def create_user( inbound_port_target, id, total_traffics , title, expire_date, c
     if(inbound_port_target == 0):
         return "Please select a port 2" 
     if(total_traffics != 0):
-      total_traffics = int(total_traffics) * 1024 * 1024 * 1024
+      total_traffics = float(total_traffics) * 1024 * 1024 * 1024
 
         # connect to db
     conn = sqlite3.connect(dburl)
